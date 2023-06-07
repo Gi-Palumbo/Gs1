@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Despesas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333333;
+    }
+
+    header {
+      background-color: #333333;
+      color: #ffffff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    form {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #cccccc;
+      border-radius: 5px;
+      background-color: #ffffff;
+    }
+
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #cccccc;
+      border-radius: 3px;
+    }
+
+    input[type="submit"] {
+      background-color: #333333;
+      color: #ffffff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #cccccc;
+    }
+
+    table th {
+      background-color: #f2f2f2;
+    }
+
+    h2 {
+      margin-top: 20px;
+      color: #333333;
+    }
+
+    #expenseSummaryContainer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    #expenseSummaryContainer > div {
+      flex: 0 0 30%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #f5f5f5;
+    }
+
+    #expenseSummaryContainer h3 {
+      text-align: center;
+      margin-bottom: 5px;
+      color: #333333;
+    }
+
+    #expenseSummaryContainer p {
+      text-align: center;
+      margin: 0;
+      color: #333333;
+    }
+    #customerForm {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #cccccc;
+      border-radius: 5px;
+      background-color: #ffffff;
+    }
+  </style>
+
+</head>
+<body>
+  <header>
+    <h1>Cadastro de Despesas</h1>
+  </header>
+
+  <form id="expenseForm">
+    <label for="descricao">Descrição:</label>
+    <input type="text" id="descricao" name="descricao" required>
+
+    <label for="valor">Valor:</label>
+    <input type="number" id="valor" name="valor" required>
+
+    <label for="data">Data:</label>
+    <input type="date" id="data" name="data" required>
+
+    <input type="submit" value="Cadastrar">
+  </form>
+
+  <h2>Tela de Consulta</h2>
+
+  <input type="text" id="searchInput" placeholder="Buscar">
+  <select id="filterSelect">
+    <option value="descricao">Descrição</option>
+    <option value="valor">Valor</option>
+    <option value="data">Data</option>
+  </select>
+
+  <table id="expenseTable">
+    <thead>
+      <tr>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Data</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Linhas da tabela de consulta serão adicionadas dinamicamente aqui -->
+    </tbody>
+  </table>
+
+  <h2>Análise de Consumo</h2>
+  <div class="expense-summary"></div>
+
+  <div>
+    <h3>Total de Despesas:</h3>
+    <span id="totalExpenses">R$ 0.00</span>
+  </div>
+
+  <div>
+    <h3>Média de Despesas:</h3>
+    <span id="averageExpense">R$ 0.00</span>
+  </div>
+
+  <div>
+    <h3>Maior Despesa:</h3>
+    <span id="maxExpense">R$ 0.00</span>
+  </div>
+
+  <div>
+    <h3>Menor Despesa:</h3>
+    <span id="minExpense">R$ 0.00</span>
+  </div>
+  <h2>Cadastro de Clientes</h2>
+  
+  <form id="customerForm">
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" name="nome" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="telefone">Telefone:</label>
+    <input type="tel" id="telefone" name="telefone" required>
+
+    <input type="submit" value="Cadastrar">
+  </form>
+
+  <h2>Tela de Consulta de Clientes</h2>
+
+  <input type="text" id="searchCustomerInput" placeholder="Buscar">
+  <select id="filterCustomerSelect">
+    <option value="nome">Nome</option>
+    <option value="email">Email</option>
+    <option value="telefone">Telefone</option>
+  </select>
+
+  <table id="customerTable">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Telefone</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Linhas da tabela de consulta de clientes serão adicionadas dinamicamente aqui -->
+    </tbody>
+  </table>
+
+  <script>
+    // Função para salvar os dados no LocalStorage
+    function saveExpense(event) {
+      event.preventDefault(); // Impede o envio do formulário
+
+      const descricao = document.getElementById('descricao').value;
+      const valor = document.getElementById('valor').value;
+      const data = document.getElementById('data').value;
+
+      // Validar os campos do formulário
+      if (descricao === '' || valor === '' || data === '') {
+        alert('Por favor, preencha todos os campos do formulário.');
+        return;
+      }
+
+      // Obter as despesas salvas no LocalStorage
+      let expenses = localStorage.getItem('expenses');
+      if (expenses) {
+        expenses = JSON.parse(expenses);
+      } else {
+        expenses = [];
+      }
+
+      // Criar um novo objeto de despesa
+      const newExpense = {
+        descricao: descricao,
+        valor: valor,
+        data: data
+      };
+
+      // Adicionar a nova despesa à lista
+      expenses.push(newExpense);
+
+      // Salvar as despesas no LocalStorage
+      localStorage.setItem('expenses', JSON.stringify(expenses));
+
+            // Limpar o formulário
+            document.getElementById('descricao').value = '';
+      document.getElementById('valor').value = '';
+      document.getElementById('data').value = '';
+
+      // Atualizar a tabela de consulta e a seção de análise de consumo
+      updateExpenseTable();
+      updateExpenseSummary();
+    }
+
+    // Função para atualizar a tabela de consulta
+    function updateExpenseTable() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const filterSelect = document.getElementById('filterSelect').value;
+
+      let expenses = localStorage.getItem('expenses');
+      if (expenses) {
+        expenses = JSON.parse(expenses);
+
+        let filteredExpenses = expenses;
+        if (searchInput) {
+          filteredExpenses = filteredExpenses.filter(expense =>
+            expense[filterSelect].toLowerCase().includes(searchInput)
+          );
+        }
+
+        const tableBody = document.getElementById('expenseTable').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+
+        filteredExpenses.forEach(expense => {
+          const row = tableBody.insertRow();
+
+          const descricaoCell = row.insertCell();
+          descricaoCell.textContent = expense.descricao;
+
+          const valorCell = row.insertCell();
+          valorCell.textContent = 'R$ ' + expense.valor;
+
+          const dataCell = row.insertCell();
+          dataCell.textContent = expense.data;
+
+          const actionsCell = row.insertCell();
+          const deleteButton = document.createElement('button');
+          deleteButton.textContent = 'Excluir';
+          deleteButton.addEventListener('click', function() {
+            deleteExpense(expense);
+          });
+          actionsCell.appendChild(deleteButton);
+        });
+      }
+    }
+
+    // Função para atualizar a seção de análise de consumo
+    function updateExpenseSummary() {
+      let expenses = localStorage.getItem('expenses');
+      if (expenses) {
+        expenses = JSON.parse(expenses);
+
+        const totalExpenses = expenses.reduce((total, expense) =>
+          total + parseFloat(expense.valor), 0).toFixed(2);
+        document.getElementById('totalExpenses').textContent = 'R$ ' + totalExpenses;
+
+        const averageExpense = (totalExpenses / expenses.length).toFixed(2);
+        document.getElementById('averageExpense').textContent = 'R$ ' + averageExpense;
+
+        const maxExpense = Math.max(...expenses.map(expense => parseFloat(expense.valor))).toFixed(2);
+        document.getElementById('maxExpense').textContent = 'R$ ' + maxExpense;
+
+        const minExpense = Math.min(...expenses.map(expense => parseFloat(expense.valor))).toFixed(2);
+        document.getElementById('minExpense').textContent = 'R$ ' + minExpense;
+      } else {
+        document.getElementById('totalExpenses').textContent = 'R$ 0.00';
+        document.getElementById('averageExpense').textContent = 'R$ 0.00';
+        document.getElementById('maxExpense').textContent = 'R$ 0.00';
+        document.getElementById('minExpense').textContent = 'R$ 0.00';
+      }
+    }
+
+    // Função para excluir uma despesa
+    function deleteExpense(expense) {
+      let expenses = localStorage.getItem('expenses');
+      if (expenses) {
+        expenses = JSON.parse(expenses);
+
+        // Encontrar o índice da despesa a ser excluída
+        const index = expenses.findIndex(item =>
+          item.descricao === expense.descricao &&
+          item.valor === expense.valor &&
+          item.data === expense.data
+        );
+
+                // Remover a despesa do array
+                if (index !== -1) {
+          expenses.splice(index, 1);
+
+          // Salvar as despesas atualizadas no LocalStorage
+          localStorage.setItem('expenses', JSON.stringify(expenses));
+
+          // Atualizar a tabela de consulta e a seção de análise de consumo
+          updateExpenseTable();
+          updateExpenseSummary();
+        }
+      }
+    }
+
+    // Evento para o envio do formulário
+    document.getElementById('expenseForm').addEventListener('submit', saveExpense);
+
+    // Evento para a busca e filtro
+    document.getElementById('searchInput').addEventListener('input', updateExpenseTable);
+    document.getElementById('filterSelect').addEventListener('change', updateExpenseTable);
+
+    // Carregar a tabela de consulta e a seção de análise de consumo ao carregar a página
+    updateExpenseTable();
+    updateExpenseSummary();
+        // Função para salvar os dados do cliente no LocalStorage
+    function saveCustomer(event) {
+      event.preventDefault();
+
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const telefone = document.getElementById('telefone').value;
+
+      // Validar os campos do formulário de clientes
+      if (nome === '' || email === '' || telefone === '') {
+        alert('Por favor, preencha todos os campos do formulário de clientes.');
+        return;
+      }
+
+      let customers = localStorage.getItem('customers');
+      if (customers) {
+        customers = JSON.parse(customers);
+      } else {
+        customers = [];
+      }
+
+      const newCustomer = {
+        nome: nome,
+        email: email,
+        telefone: telefone
+      };
+
+      customers.push(newCustomer);
+
+      localStorage.setItem('customers', JSON.stringify(customers));
+
+      document.getElementById('nome').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('telefone').value = '';
+
+      updateCustomerTable();
+    }
+
+    // Função para atualizar a tabela de consulta de clientes
+    function updateCustomerTable() {
+      const searchInput = document.getElementById('searchCustomerInput').value.toLowerCase();
+      const filterSelect = document.getElementById('filterCustomerSelect').value;
+
+      let customers = localStorage.getItem('customers');
+      if (customers) {
+customers = JSON.parse(customers);
+
+    let filteredCustomers = customers;
+    if (searchInput) {
+      filteredCustomers = filteredCustomers.filter(customer =>
+        customer[filterSelect].toLowerCase().includes(searchInput)
+      );
+    }
+
+    const tableBody = document.getElementById('customerTable').getElementsByTagName('tbody')[0];
+    tableBody.innerHTML = '';
+
+    filteredCustomers.forEach(customer => {
+      const row = tableBody.insertRow();
+
+      const nomeCell = row.insertCell();
+      nomeCell.textContent = customer.nome;
+
+      const emailCell = row.insertCell();
+      emailCell.textContent = customer.email;
+
+      const telefoneCell = row.insertCell();
+      telefoneCell.textContent = customer.telefone;
+
+      const actionsCell = row.insertCell();
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Excluir';
+      deleteButton.addEventListener('click', function() {
+        deleteCustomer(customer);
+      });
+      actionsCell.appendChild(deleteButton);
+    });
+  }
+}
+
+// Função para excluir um cliente
+function deleteCustomer(customer) {
+  let customers = localStorage.getItem('customers');
+  if (customers) {
+    customers = JSON.parse(customers);
+
+    const index = customers.findIndex(item =>
+      item.nome === customer.nome &&
+      item.email === customer.email &&
+      item.telefone === customer.telefone
+    );
+
+    if (index !== -1) {
+      customers.splice(index, 1);
+
+      localStorage.setItem('customers', JSON.stringify(customers));
+
+      updateCustomerTable();
+    }
+  }
+}
+
+// Evento para o envio do formulário de clientes
+document.getElementById('customerForm').addEventListener('submit', saveCustomer);
+
+// Evento para a busca e filtro de clientes
+document.getElementById('searchCustomerInput').addEventListener('input', updateCustomerTable);
+document.getElementById('filterCustomerSelect').addEventListener('change', updateCustomerTable);
+
+// Carregar a tabela de consulta de clientes ao carregar a página
+updateCustomerTable();
+  </script>
+</body>
+</html>
